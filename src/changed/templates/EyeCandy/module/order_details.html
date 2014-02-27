@@ -36,16 +36,23 @@
                 <a class="button_cart_refresh" href="{page_url}#"><img class="png-fix" src="{$tpl_path}img/icons/icon-refresh.png" title="{$button.update}" alt="{$button.update}" /></a>&nbsp;
                 <a class="button_cart_delete" href="{page_url}#" rel="{$module_data.PRODUCTS_ID_EXTENDED}"><img class="png-fix" src="{$tpl_path}img/icons/icon-delete.png" title="{$button.delete}" alt="{$button.delete}" /></a>
             </td>
-            <td class="col_3">{$module_data.PRODUCTS_SINGLE_PRICE}</td>
+            <td class="col_3">{$module_data.PRODUCTS_SINGLE_PRICE}{if $module_data.PRODUCTS_VPE_ARRAY.vpe_text != ''}<br />{$module_data.PRODUCTS_VPE_ARRAY.vpe_text}{/if}</td>
             <td class="col_4">{$module_data.PRODUCTS_PRICE}</td>
         </tr>
         {/foreach}
         <tr>
             <td colspan="3" class="col_0 order-total">
+				{$content_data.cart_shipping_costs_selection}	
 				{$content_data.MODULE_gift_cart}				
             </td>
 			<td colspan="2" valign="top" align="right" class="order-total">
 				<table width="100%" cellspacing="0">
+					{if $content_data.SHOW_SHIPPING_WEIGHT == 1}
+						<tr class="calculation">
+							<td class="col_1">{if $content_data.SHOW_SHIPPING_WEIGHT_INFO == 1}<img style="vertical-align: text-bottom" src="{$tpl_path}img/icon_cart_shipping_costs_info.png" alt="{$txt.shipping_weight_info}" title="{$txt.shipping_weight_info}"> {/if}{$txt.shipping_weight}:</td>
+							<td class="col_2">{$content_data.SHIPPING_WEIGHT} {$txt.text_weight_unit}</td>
+						</tr>
+					{/if}
 					<tr class="calculation">
 						<td class="col_1">{$txt.text_subtotal}</td>
 						<td class="col_2">{$content_data.SUBTOTAL}</td>
