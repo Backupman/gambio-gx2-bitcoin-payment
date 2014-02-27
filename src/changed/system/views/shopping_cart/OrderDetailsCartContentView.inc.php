@@ -307,10 +307,10 @@ class OrderDetailsCartContentView extends ContentView
 		$t_view_html = $coo_gift_cart->get_html();
 		$this->set_content_data('MODULE_gift_cart', $t_view_html);
 
-       // Bitcoin Payment - Commerce Coding - BEGIN
+       // Machinecoin Payment - Commerce Coding - BEGIN
        $multiplier = 1;
        $digits = 8;
-       switch (MODULE_PAYMENT_BITCOIN_UNITS) {
+       switch (MODULE_PAYMENT_MACHINECOIN_UNITS) {
            case 'uBTC':
                $multiplier *= 1000;
                $digits -= 3;
@@ -318,10 +318,10 @@ class OrderDetailsCartContentView extends ContentView
                $multiplier *= 1000;
                $digits -= 3;
            case 'BTC':
-               $btcPrice = number_format($total / MODULE_PAYMENT_BITCOIN_BTCEUR * $multiplier, $digits, '.', '');
-               $this->set_content_data('BITCOIN_PRICE', $btcPrice . ' ' . MODULE_PAYMENT_BITCOIN_UNITS);
+               $btcPrice = number_format($total / MODULE_PAYMENT_MACHINECOIN_BTCEUR * $multiplier, $digits, '.', '');
+               $this->set_content_data('MACHINECOIN_PRICE', $btcPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS);
        }
-       // Bitcoin Payment - Commerce Coding - END
+       // Machinecoin Payment - Commerce Coding - END
 
 		$t_html_output = $this->build_html();
 

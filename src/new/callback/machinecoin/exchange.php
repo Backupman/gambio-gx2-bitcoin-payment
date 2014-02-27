@@ -1,6 +1,6 @@
 <?php
 /**
- * CommerceCoding Bitcoin Payment for Gambio GX2
+ * Machinecoin Payment for Gambio GX2
  *
  * NOTICE OF LICENSE
  *
@@ -25,7 +25,7 @@
 chdir('../../');
 require_once('includes/application_top.php');
 
-switch (MODULE_PAYMENT_BITCOIN_SOURCE) {
+switch (MODULE_PAYMENT_MACHINECOIN_SOURCE) {
     case 'blockchain.info':
         $json = file_get_contents('http://blockchain.info/ticker');
         $object = json_decode($json);
@@ -49,5 +49,5 @@ if($rate) {
     $json = file_get_contents('https://bitdango.com/api/currencypairs/USDEUR');
     $object = json_decode($json);
     $usdToEur = $object->ExchangeRate;
-    xtc_db_query("UPDATE " . TABLE_CONFIGURATION . " SET `configuration_value` = '" . number_format($rate * $usdToEur, 5, '.', '')  . "' WHERE `configuration_key` = 'MODULE_PAYMENT_BITCOIN_BTCEUR'");
+    xtc_db_query("UPDATE " . TABLE_CONFIGURATION . " SET `configuration_value` = '" . number_format($rate * $usdToEur, 5, '.', '')  . "' WHERE `configuration_key` = 'MODULE_PAYMENT_MACHINECOIN_BTCEUR'");
 }

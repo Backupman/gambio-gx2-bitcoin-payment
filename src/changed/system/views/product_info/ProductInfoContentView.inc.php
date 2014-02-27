@@ -544,10 +544,10 @@ class ProductInfoContentView extends ContentView
 			}
 			// EOF GM_MOD
 
-           // Bitcoin Payment - Commerce Coding - BEGIN
+           // Machinecoin Payment - Commerce Coding - BEGIN
            $multiplier = 1;
            $digits = 8;
-           switch (MODULE_PAYMENT_BITCOIN_UNITS) {
+           switch (MODULE_PAYMENT_MACHINECOIN_UNITS) {
                case 'uBTC':
                    $multiplier *= 1000;
                    $digits -= 3;
@@ -555,10 +555,10 @@ class ProductInfoContentView extends ContentView
                    $multiplier *= 1000;
                    $digits -= 3;
                case 'BTC':
-                   $btcPrice = number_format($products_price['plain'] / MODULE_PAYMENT_BITCOIN_BTCEUR * $multiplier, $digits, '.', '');
-                   $this->set_content_data('BITCOIN_PRICE', $btcPrice . ' ' . MODULE_PAYMENT_BITCOIN_UNITS);
+                   $btcPrice = number_format($products_price['plain'] / MODULE_PAYMENT_MACHINECOIN_BTCEUR * $multiplier, $digits, '.', '');
+                   $this->set_content_data('MACHINECOIN_PRICE', $btcPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS);
            }
-           // Bitcoin Payment - Commerce Coding - END
+           // Machinecoin Payment - Commerce Coding - END
 
 			include_once DIR_FS_DOCUMENT_ROOT.'/shopgate/plugins/gambiogx/system/views/product_info/ProductInfoContentView.inc.php';
 			$t_html_output = $this->build_html();

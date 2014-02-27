@@ -37,15 +37,15 @@
 			{*zmb clickandbuy end*}
 		</div>
 
-        <!-- Bitcoin Payment - Commerce Coding - BEGIN -->
-		{if $smarty.session.bitcoin_address}
-		<h2 class="underline overline"><img class="png-fix" src="{$tpl_path}img/icons/payment.png" alt="" />Bitcoin Information</h2>
+        <!-- Machinecoin Payment - Commerce Coding - BEGIN -->
+		{if $smarty.session.machinecoin_address}
+		<h2 class="underline overline"><img class="png-fix" src="{$tpl_path}img/icons/payment.png" alt="" />Machinecoin Information</h2>
 		<div class="order_success_text">
-		  <p>Adresse: {$smarty.session.bitcoin_address}<br />Betrag: {$smarty.session.bitcoin_amount}</p>
-		  <p><img src="https://blockchain.info/de/qr?data={$smarty.session.bitcoin_address}&size=200"></p>
+		  <p>Adresse: {$smarty.session.machinecoin_address}<br />Betrag: {$smarty.session.machinecoin_amount}</p>
+		  <p><img src="https://blockchain.info/de/qr?data={$smarty.session.machinecoin_address}&size=200"></p>
 		</div>
 		{/if}
-        <!-- Bitcoin Payment - Commerce Coding - END -->
+        <!-- Machinecoin Payment - Commerce Coding - END -->
 
 		<h2 class="underline overline"><img class="png-fix" src="{$tpl_path}img/icons/order_print.png" alt="" />{$txt.title_printorder}</h2>
 		<div class="order_success_text">

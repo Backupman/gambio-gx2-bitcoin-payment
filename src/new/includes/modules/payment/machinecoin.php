@@ -1,6 +1,6 @@
 <?php
 /**
- * CommerceCoding Bitcoin Payment for Gambio GX2
+ * Machinecoin Payment for Gambio GX2
  *
  * NOTICE OF LICENSE
  *
@@ -22,19 +22,19 @@
  * @license     http://opensource.org/licenses/GPL-2.0  GNU General Public License, version 2 (GPL-2.0)
  */
 
-class bitcoin
+class machinecoin
 {
     /**
      * Constructor class, sets the settings.
      */
-    function bitcoin()
+    function machinecoin()
     {
-        $this->code = 'bitcoin';
+        $this->code = 'machinecoin';
         $this->version = '0.1.0';
-        $this->title = MODULE_PAYMENT_BITCOIN_TEXT_TITLE;
-        $this->description = MODULE_PAYMENT_BITCOIN_TEXT_DESCRIPTION;
-        $this->sort_order = MODULE_PAYMENT_BITCOIN_SORT_ORDER;
-        $this->enabled = (MODULE_PAYMENT_BITCOIN_STATUS == 'True') ? true : false;
+        $this->title = MODULE_PAYMENT_MACHINECOIN_TEXT_TITLE;
+        $this->description = MODULE_PAYMENT_MACHINECOIN_TEXT_DESCRIPTION;
+        $this->sort_order = MODULE_PAYMENT_MACHINECOIN_SORT_ORDER;
+        $this->enabled = (MODULE_PAYMENT_MACHINECOIN_STATUS == 'True') ? true : false;
     }
 
     /**
@@ -65,7 +65,7 @@ class bitcoin
     function selection()
     {
         $title = $this->title;
-        $description = MODULE_PAYMENT_BITCOIN_TEXT_FRONTEND_DESCRIPTION;
+        $description = MODULE_PAYMENT_MACHINECOIN_TEXT_FRONTEND_DESCRIPTION;
 
         return array('id' => $this->code, 'module' => $title, 'description' => $description);
     }
@@ -107,13 +107,13 @@ class bitcoin
      */
     function before_process()
     {
-        $transaction = $this->getBitcoinOrderAddress();
+        $transaction = $this->getMachinecoinOrderAddress();
 
         if(is_array($transaction)) {
-            $_SESSION['bitcoin_address'] = $transaction['address'];
-            $_SESSION['bitcoin_uniqid'] = $transaction['uniqid'];
+            $_SESSION['machinecoin_address'] = $transaction['address'];
+            $_SESSION['machinecoin_uniqid'] = $transaction['uniqid'];
         } else {
-            xtc_redirect(xtc_href_link(FILENAME_CHECKOUT_PAYMENT, 'payment_error=bitcoin&' . session_name() . '=' . session_id(), 'SSL'));
+            xtc_redirect(xtc_href_link(FILENAME_CHECKOUT_PAYMENT, 'payment_error=machinecoin&' . session_name() . '=' . session_id(), 'SSL'));
         }
     }
 
@@ -127,10 +127,10 @@ class bitcoin
         $totals = $order->totals;
         $total = end($totals);
 
-        $price = $total['value'] / MODULE_PAYMENT_BITCOIN_BTCEUR;
+        $price = $total['value'] / MODULE_PAYMENT_MACHINECOIN_BTCEUR;
         $multiplier = 1;
         $digits = 8;
-        switch (MODULE_PAYMENT_BITCOIN_UNITS) {
+        switch (MODULE_PAYMENT_MACHINECOIN_UNITS) {
             case 'uBTC':
                 $multiplier *= 1000;
                 $digits -= 3;
@@ -140,7 +140,7 @@ class bitcoin
             case 'BTC':
                 $btcPrice = number_format($price * $multiplier, $digits, '.', '');
         }
-        $_SESSION['bitcoin_amount'] = $btcPrice . ' ' . MODULE_PAYMENT_BITCOIN_UNITS;
+        $_SESSION['machinecoin_amount'] = $btcPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS;
 
         $query = xtc_db_query("SELECT orders_status_history_id, comments FROM " . TABLE_ORDERS_STATUS_HISTORY . "
                                WHERE orders_id = '" . $insert_id . "'
@@ -148,15 +148,15 @@ class bitcoin
         $last = xtc_db_fetch_array($query);
 
         xtc_db_query("UPDATE " . TABLE_ORDERS . "
-                      SET bitcoin_address = '" . $_SESSION['bitcoin_address'] . "' ,
-                          bitcoin_amount = '" .  round($price * 100000000) . "',
-                          bitcoin_uniqid = '" .  $_SESSION['bitcoin_uniqid'] . "',
-                          orders_status = '" . MODULE_PAYMENT_BITCOIN_NEW_STATUS . "'
+                      SET machinecoin_address = '" . $_SESSION['machinecoin_address'] . "' ,
+                          machinecoin_amount = '" .  round($price * 100000000) . "',
+                          machinecoin_uniqid = '" .  $_SESSION['machinecoin_uniqid'] . "',
+                          orders_status = '" . MODULE_PAYMENT_MACHINECOIN_NEW_STATUS . "'
                       WHERE orders_id = '" . $insert_id . "'");
 
         xtc_db_query("UPDATE " . TABLE_ORDERS_STATUS_HISTORY . "
-                      SET orders_status_id = '" . MODULE_PAYMENT_BITCOIN_NEW_STATUS . "',
-                          comments = '" . sprintf(MODULE_PAYMENT_BITCOIN_NEW_COMMENT, $_SESSION['bitcoin_address'], $_SESSION['bitcoin_amount']) . "'
+                      SET orders_status_id = '" . MODULE_PAYMENT_MACHINECOIN_NEW_STATUS . "',
+                          comments = '" . sprintf(MODULE_PAYMENT_MACHINECOIN_NEW_COMMENT, $_SESSION['machinecoin_address'], $_SESSION['machinecoin_amount']) . "'
                       WHERE orders_status_history_id = '" . $last['orders_status_history_id'] . "'");
     }
 
@@ -166,8 +166,8 @@ class bitcoin
     function get_error()
     {
         $error = false;
-        if (isset($_GET['payment_error']) && $_GET['payment_error'] == 'bitcoin') {
-            $error = array('title' => MODULE_PAYMENT_BITCOIN_TEXT_ERROR, 'error' => MODULE_PAYMENT_BITCOIN_TEXT_PAYMENT_ERROR);
+        if (isset($_GET['payment_error']) && $_GET['payment_error'] == 'machinecoin') {
+            $error = array('title' => MODULE_PAYMENT_MACHINECOIN_TEXT_ERROR, 'error' => MODULE_PAYMENT_MACHINECOIN_TEXT_PAYMENT_ERROR);
         }
 
         return $error;
@@ -184,7 +184,7 @@ class bitcoin
     }
 
     /**
-     * Checks if Bitcoin payment module is installed.
+     * Checks if Machinecoin payment module is installed.
      *
      * @return integer
      */
@@ -192,7 +192,7 @@ class bitcoin
     {
         if (!isset($this->_check)) {
             $check_query = xtc_db_query("SELECT configuration_value FROM " . TABLE_CONFIGURATION . "
-                                   WHERE configuration_key = 'MODULE_PAYMENT_BITCOIN_STATUS'");
+                                   WHERE configuration_key = 'MODULE_PAYMENT_MACHINECOIN_STATUS'");
             $this->_check = xtc_db_num_rows($check_query);
         }
         return $this->_check;
@@ -207,52 +207,52 @@ class bitcoin
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . "
             (configuration_key, configuration_value, configuration_group_id, sort_order, set_function, date_added)
             VALUES
-            ('MODULE_PAYMENT_BITCOIN_STATUS', 'False', '6', '1', 'xtc_cfg_select_option(array(\'True\', \'False\'), ', now()),
-            ('MODULE_PAYMENT_BITCOIN_SOURCE', 'none', '6', '4', 'xtc_cfg_select_option(array(\'none\', \'blockchain.info\', \'bitstamp.net\', \'coinbase.com\'), ', now()),
-            ('MODULE_PAYMENT_BITCOIN_UNITS', 'BTC', '6', '3', 'xtc_cfg_select_option(array(\'BTC\', \'mBTC\', \'uBTC\'), ', now()),
-            ('MODULE_PAYMENT_BITCOIN_API_SHARED', 'False', '6', '8', 'xtc_cfg_select_option(array(\'True\', \'False\'), ', now())");
+            ('MODULE_PAYMENT_MACHINECOIN_STATUS', 'False', '6', '1', 'xtc_cfg_select_option(array(\'True\', \'False\'), ', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_SOURCE', 'none', '6', '4', 'xtc_cfg_select_option(array(\'none\', \'blockchain.info\', \'bitstamp.net\', \'coinbase.com\'), ', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_UNITS', 'BTC', '6', '3', 'xtc_cfg_select_option(array(\'BTC\', \'mBTC\', \'uBTC\'), ', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_API_SHARED', 'False', '6', '8', 'xtc_cfg_select_option(array(\'True\', \'False\'), ', now())");
 
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . "
             (configuration_key, configuration_value, configuration_group_id, sort_order, date_added)
             VALUES
-            ('MODULE_PAYMENT_BITCOIN_ALLOWED', '', '6', '2', now()),
-            ('MODULE_PAYMENT_BITCOIN_BTCEUR', '', '6', '5', now()),
-            ('MODULE_PAYMENT_BITCOIN_API_ADDRESS', '', '6', '6', now()),
-            ('MODULE_PAYMENT_BITCOIN_API_CONFIRMS', '', '6', '7', now()),
-            ('MODULE_PAYMENT_BITCOIN_SORT_ORDER', '0', '6', '11', now())");
+            ('MODULE_PAYMENT_MACHINECOIN_ALLOWED', '', '6', '2', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_BTCEUR', '', '6', '5', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_API_ADDRESS', '', '6', '6', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_API_CONFIRMS', '', '6', '7', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_SORT_ORDER', '0', '6', '11', now())");
 
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . "
             (configuration_key, configuration_value, configuration_group_id, sort_order, set_function, use_function, date_added)
             VALUES
-            ('MODULE_PAYMENT_BITCOIN_NEW_STATUS', '0', '6', '9', 'xtc_cfg_pull_down_order_statuses(', 'xtc_get_order_status_name', now()),
-            ('MODULE_PAYMENT_BITCOIN_PAID_STATUS', '0', '6', '10', 'xtc_cfg_pull_down_order_statuses(', 'xtc_get_order_status_name', now())");
+            ('MODULE_PAYMENT_MACHINECOIN_NEW_STATUS', '0', '6', '9', 'xtc_cfg_pull_down_order_statuses(', 'xtc_get_order_status_name', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_PAID_STATUS', '0', '6', '10', 'xtc_cfg_pull_down_order_statuses(', 'xtc_get_order_status_name', now())");
 
-        // expand order table with bitcoin uniqid, address and amount fields
+        // expand order table with machinecoin uniqid, address and amount fields
         $query1 = xtc_db_query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS
                                 WHERE table_name = '" . TABLE_ORDERS . "'
                                 AND table_schema = '" . DB_DATABASE . "'
-                                AND column_name = 'bitcoin_uniqid'");
+                                AND column_name = 'machinecoin_uniqid'");
 
         if (xtc_db_num_rows($query1) == 0) {
-            xtc_db_query("ALTER TABLE `" . TABLE_ORDERS . "` ADD `bitcoin_uniqid` varchar(30) NOT NULL default '';");
+            xtc_db_query("ALTER TABLE `" . TABLE_ORDERS . "` ADD `machinecoin_uniqid` varchar(30) NOT NULL default '';");
         }
 
         $query2 = xtc_db_query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS
                                 WHERE table_name = '" . TABLE_ORDERS . "'
                                 AND table_schema = '" . DB_DATABASE . "'
-                                AND column_name = 'bitcoin_address'");
+                                AND column_name = 'machinecoin_address'");
 
         if (xtc_db_num_rows($query2) == 0) {
-            xtc_db_query("ALTER TABLE `" . TABLE_ORDERS . "` ADD `bitcoin_address` varchar(40) NOT NULL default '';");
+            xtc_db_query("ALTER TABLE `" . TABLE_ORDERS . "` ADD `machinecoin_address` varchar(40) NOT NULL default '';");
         }
 
         $query3 = xtc_db_query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS
                                 WHERE table_name = '" . TABLE_ORDERS . "'
                                 AND table_schema = '" . DB_DATABASE . "'
-                                AND column_name = 'bitcoin_amount'");
+                                AND column_name = 'machinecoin_amount'");
 
         if (xtc_db_num_rows($query3) == 0) {
-            xtc_db_query("ALTER TABLE `" . TABLE_ORDERS . "` ADD `bitcoin_amount` bigint(16) NOT NULL default '0';");
+            xtc_db_query("ALTER TABLE `" . TABLE_ORDERS . "` ADD `machinecoin_amount` bigint(16) NOT NULL default '0';");
         }
     }
 
@@ -272,29 +272,29 @@ class bitcoin
      */
     function keys()
     {
-        return array('MODULE_PAYMENT_BITCOIN_STATUS',
-            'MODULE_PAYMENT_BITCOIN_ALLOWED',
-            'MODULE_PAYMENT_BITCOIN_UNITS',
-            'MODULE_PAYMENT_BITCOIN_SOURCE',
-            'MODULE_PAYMENT_BITCOIN_BTCEUR',
-            'MODULE_PAYMENT_BITCOIN_API_ADDRESS',
-            'MODULE_PAYMENT_BITCOIN_API_CONFIRMS',
-            'MODULE_PAYMENT_BITCOIN_API_SHARED',
-            'MODULE_PAYMENT_BITCOIN_NEW_STATUS',
-            'MODULE_PAYMENT_BITCOIN_PAID_STATUS',
-            'MODULE_PAYMENT_BITCOIN_SORT_ORDER');
+        return array('MODULE_PAYMENT_MACHINECOIN_STATUS',
+            'MODULE_PAYMENT_MACHINECOIN_ALLOWED',
+            'MODULE_PAYMENT_MACHINECOIN_UNITS',
+            'MODULE_PAYMENT_MACHINECOIN_SOURCE',
+            'MODULE_PAYMENT_MACHINECOIN_BTCEUR',
+            'MODULE_PAYMENT_MACHINECOIN_API_ADDRESS',
+            'MODULE_PAYMENT_MACHINECOIN_API_CONFIRMS',
+            'MODULE_PAYMENT_MACHINECOIN_API_SHARED',
+            'MODULE_PAYMENT_MACHINECOIN_NEW_STATUS',
+            'MODULE_PAYMENT_MACHINECOIN_PAID_STATUS',
+            'MODULE_PAYMENT_MACHINECOIN_SORT_ORDER');
     }
 
-    function getBitcoinOrderAddress()
+    function getMachinecoinOrderAddress()
     {
         // prepare url
         $uniqid = str_replace('.', '', rand(0,1000) . uniqid('', true));
         $url = 'https://blockchain.info/api/receive?method=create';
-        $url .= '&address=' . MODULE_PAYMENT_BITCOIN_API_ADDRESS;
-        $url .= MODULE_PAYMENT_BITCOIN_API_SHARED == 'True' ? '&shared=true' : '&shared=false';
-        $url .= '&callback=' . urlencode(xtc_href_link('callback/bitcoin/callback.php', 'uniqid=' . $uniqid, 'SSL'));
+        $url .= '&address=' . MODULE_PAYMENT_MACHINECOIN_API_ADDRESS;
+        $url .= MODULE_PAYMENT_MACHINECOIN_API_SHARED == 'True' ? '&shared=true' : '&shared=false';
+        $url .= '&callback=' . urlencode(xtc_href_link('callback/machinecoin/callback.php', 'uniqid=' . $uniqid, 'SSL'));
         
-        // get bitcoin address for current order
+        // get machinecoin address for current order
         $json = @file_get_contents($url);
         $object = json_decode($json);
         $address = $object->input_address;

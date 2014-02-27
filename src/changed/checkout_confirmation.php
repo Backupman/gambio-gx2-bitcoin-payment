@@ -509,11 +509,11 @@ else
 
 // EOF GM_MOD
 
-// Bitcoin Payment - Commerce Coding - BEGIN
-if($_SESSION['payment'] == 'bitcoin') {
+// Machinecoin Payment - Commerce Coding - BEGIN
+if($_SESSION['payment'] == 'machinecoin') {
     $multiplier = 1;
     $digits = 8;
-    switch (MODULE_PAYMENT_BITCOIN_UNITS) {
+    switch (MODULE_PAYMENT_MACHINECOIN_UNITS) {
         case 'uBTC':
             $multiplier *= 1000;
             $digits -= 3;
@@ -521,11 +521,11 @@ if($_SESSION['payment'] == 'bitcoin') {
             $multiplier *= 1000;
             $digits -= 3;
         case 'BTC':
-            $btcPrice = number_format($order->info['total'] / MODULE_PAYMENT_BITCOIN_BTCEUR * $multiplier, $digits, '.', '');
-            $smarty->assign('BITCOIN_PRICE', $btcPrice . ' ' . MODULE_PAYMENT_BITCOIN_UNITS);
+            $btcPrice = number_format($order->info['total'] / MODULE_PAYMENT_MACHINECOIN_BTCEUR * $multiplier, $digits, '.', '');
+            $smarty->assign('MACHINECOIN_PRICE', $btcPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS);
     }
 }
-// Bitcoin Payment - Commerce Coding - END
+// Machinecoin Payment - Commerce Coding - END
 
 // BOF GM_MOD:
 $smarty->assign('LIGHTBOX', gm_get_conf('GM_LIGHTBOX_CHECKOUT'));	

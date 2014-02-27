@@ -71,15 +71,15 @@
 							{if $content_data.SHIPPING_INFO && !$content_data.TAX_FREE_TEXT}<div class="shipping-text">{$content_data.TAX_FREE_TEXT} {$content_data.SHIPPING_INFO}</div>{/if}
 						</td>
 					</tr>
-                    <!-- Bitcoin Payment - Commerce Coding - BEGIN -->
-					{if $content_data.BITCOIN_PRICE}
+                    <!-- Machinecoin Payment - Commerce Coding - BEGIN -->
+					{if $content_data.MACHINECOIN_PRICE}
 					<tr class="calculation total">
 						<td class="col_2" colspan="2" valign="top">
-							{$content_data.BITCOIN_PRICE}<br />
+							{$content_data.MACHINECOIN_PRICE}<br />
 						</td>
 					</tr>
 					{/if}
-                    <!-- Bitcoin Payment - Commerce Coding - END -->
+                    <!-- Machinecoin Payment - Commerce Coding - END -->
 					{if $content_data.TAX_FREE_TEXT}
 					<tr class="calculation total">
 						<td class="col_2" colspan="2" valign="top">
