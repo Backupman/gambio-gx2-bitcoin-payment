@@ -1,9 +1,9 @@
 <?php
 /* --------------------------------------------------------------
-   OrderDetailsCartContentView.inc.php 2012-03-23 gambio
+   OrderDetailsCartContentView.inc.php 2013-11-27 gm
    Gambio GmbH
    http://www.gambio.de
-   Copyright (c) 2012 Gambio GmbH
+   Copyright (c) 2013 Gambio GmbH
    Released under the GNU General Public License (Version 2)
    [http://www.gnu.org/licenses/gpl-2.0.html]
    --------------------------------------------------------------
@@ -39,6 +39,7 @@ require_once (DIR_FS_INC.'xtc_get_short_description.inc.php');
 require_once (DIR_FS_INC.'xtc_format_price.inc.php');
 require_once (DIR_FS_INC.'xtc_get_attributes_model.inc.php');
 
+require_once(DIR_FS_INC . 'get_products_vpe_array.inc.php');
 require_once(DIR_FS_CATALOG . 'gm/inc/gm_prepare_number.inc.php');
 
 class OrderDetailsCartContentView extends ContentView
@@ -94,13 +95,12 @@ class OrderDetailsCartContentView extends ContentView
 
 			$gm_query = xtc_db_query("SELECT gm_show_weight FROM products WHERE products_id='" . $p_products_array[$i]['id'] . "'");
 			$gm_array = xtc_db_fetch_array($gm_query);
-			if(empty($gm_array['gm_show_weight'])) { $p_products_array[$i]['gm_weight'] = 0; }
 			
 			$gm_product_link = xtc_href_link(FILENAME_PRODUCT_INFO, xtc_product_link($p_products_array[$i]['id'], $p_products_array[$i]['name']) . '&no_boost=1');
 			include(DIR_FS_CATALOG . 'gm/modules/gm_gprint_order_details_cart.php');
 			
 			$t_shipping_time = $p_products_array[$i]['shipping_time'];
-			$t_products_weight = $p_products_array[$i]['gm_weight'];
+			$t_products_weight = $p_products_array[$i]['weight'];
 			
 			$t_products_model = $p_products_array[$i]['model'];
 			
@@ -127,13 +127,8 @@ class OrderDetailsCartContentView extends ContentView
 						$mark_stock = '<span class="markProductOutOfStock">' . STOCK_MARK_PRODUCT_OUT_OF_STOCK . '</span>';
 					}
                 }
-                
-                $t_weight = $coo_properties_control->get_properties_combis_weight($t_combis_id);
-
-                if($coo_products->get_data_value('use_properties_combis_weight') == 1){
-                    $t_products_weight = gm_prepare_number($t_weight, $xtPrice->currencies[$xtPrice->actualCurr]['decimal_point']);
-                }else{
-                    $t_products_weight = gm_prepare_number($t_weight+$p_products_array[$i]['weight'], $xtPrice->currencies[$xtPrice->actualCurr]['decimal_point']);
+                if($coo_products->get_data_value('use_properties_combis_weight') == 1){  
+					$t_products_weight = $coo_properties_control->get_properties_combis_weight($t_combis_id);  
                 }
                          
                 if($coo_products->get_data_value('use_properties_combis_shipping_time') == 1){
@@ -159,6 +154,15 @@ class OrderDetailsCartContentView extends ContentView
 			else {
 				$t_properties_html = '';
 			}
+			
+			if( ACTIVATE_SHIPPING_STATUS == "false" )
+			{
+				$t_shipping_time = '';
+			}
+			
+			$t_products_weight = gm_prepare_number($t_products_weight, $xtPrice->currencies[$xtPrice->actualCurr]['decimal_point']);
+			
+			if(empty($gm_array['gm_show_weight'])) { $t_products_weight = 0; }
 
 			$module_content[$i] = array (
 				'PRODUCTS_NAME'					=> $p_products_array[$i]['name'].$mark_stock,
@@ -210,7 +214,9 @@ class OrderDetailsCartContentView extends ContentView
 					require(DIR_FS_CATALOG . 'gm/modules/gm_gprint_order_details_cart_2.php');
 				}
 			}
-
+			
+			$module_content[$i]['PRODUCTS_VPE_ARRAY'] = get_products_vpe_array($p_products_array[$i]['id'], $p_products_array[$i]['price'], $module_content[$i]['ATTRIBUTES'], $t_combis_id);
+			
 		}
 
 		$total_content = '';
@@ -241,9 +247,6 @@ class OrderDetailsCartContentView extends ContentView
 		// display only if there is an ot_discount
 		if ($customer_status_value['customers_status_ot_discount'] != 0) {
 			$total_content .= TEXT_CART_OT_DISCOUNT.$customer_status_value['customers_status_ot_discount'].'%';
-		}
-		if (SHOW_SHIPPING == 'true') {
-			$this->set_content_data('SHIPPING_INFO', ' '.SHIPPING_EXCL.'<a href="' . $coo_main->gm_get_shipping_link(true) . '" target="_blank" class="lightbox_iframe"> '.SHIPPING_COSTS.'</a>');
 		}
 
 		if ($_SESSION['customers_status']['customers_status_show_price'] == '1')
@@ -302,11 +305,59 @@ class OrderDetailsCartContentView extends ContentView
 		$this->set_content_data('TOTAL_CONTENT', $total_content, 1);
 		$this->set_content_data('language', $_SESSION['language']);
 		$this->set_content_data('module_content', $module_content);
+		
+		if (SHOW_SHIPPING == 'true') 
+		{			
+			if( SHOW_CART_SHIPPING_COSTS == 'true' )
+			{
+				$coo_cart_shipping_costs_content_view = MainFactory::create_object( 'CartShippingCostsContentView' );
+				$t_html = $coo_cart_shipping_costs_content_view->get_html();
+				$this->set_content_data('cart_shipping_costs_selection', $t_html);
+				$coo_cart_shipping_costs_control = MainFactory::create_object( 'CartShippingCostsControl', array(), true );
+				$t_cart_shipping_costs_value = $coo_cart_shipping_costs_control->get_shipping_costs();
+				if ($coo_cart_shipping_costs_control->is_shipping_free() === true)
+				{
+					$coo_xtc_price = new xtcPrice($_SESSION['currency'], $_SESSION['customers_status']['customers_status_id']);
+					$t_cart_shipping_costs_value = $coo_xtc_price->xtcFormat(0, true);
+				}
+				$t_shipping_info = ' '.SHIPPING_EXCL.'<span class="cart_shipping_costs_value">' . $t_cart_shipping_costs_value . '</span> <a href="' . $coo_main->gm_get_shipping_link(true) . '" target="_blank" class="lightbox_iframe"> '.SHIPPING_COSTS.'</a>';
+				$t_shipping_info .= $coo_cart_shipping_costs_control->get_ot_gambioultra_info_html();
+			}
+			else
+			{
+				$t_shipping_info = ' '.SHIPPING_EXCL.'<a href="' . $coo_main->gm_get_shipping_link(true) . '" target="_blank" class="lightbox_iframe"> '.SHIPPING_COSTS.'</a>';
+			}
+			$this->set_content_data('SHIPPING_INFO', $t_shipping_info);
+		}
+		
+		if(SHOW_CART_SHIPPING_WEIGHT == 'true' && (SHOW_CART_SHIPPING_COSTS == 'false' || SHOW_SHIPPING == 'false'))
+		{
+			if(isset($GLOBALS['shipping_num_boxes']) === false && isset($GLOBALS['shipping_weight']) === false)
+			{
+				$coo_cart_shipping_costs_control = MainFactory::create_object('CartShippingCostsControl', array(), true);
+				$coo_cart_shipping_costs_control->get_shipping_modules();
+			}
+			
+			$this->set_content_data('SHOW_SHIPPING_WEIGHT', 1);
+			$this->set_content_data('SHIPPING_WEIGHT', gm_prepare_number($GLOBALS['shipping_num_boxes'] * $GLOBALS['shipping_weight'], $xtPrice->currencies[$xtPrice->actualCurr]['decimal_point']));
+		
+			$t_show_shipping_weight_info = 0;
+			if((double)SHIPPING_BOX_WEIGHT > 0 || (double)SHIPPING_BOX_PADDING > 0)
+			{
+				$t_show_shipping_weight_info = 1;
+			}
 
+			$this->set_content_data('SHOW_SHIPPING_WEIGHT_INFO', $t_show_shipping_weight_info);
+		}
+		else
+		{
+			$this->set_content_data('SHOW_SHIPPING_WEIGHT', 0);
+		}
+		
 		$coo_gift_cart = MainFactory::create_object('GiftCartContentView');
 		$t_view_html = $coo_gift_cart->get_html();
 		$this->set_content_data('MODULE_gift_cart', $t_view_html);
-
+		
        // Machinecoin Payment - Commerce Coding - BEGIN
        $multiplier = 1;
        $digits = 8;
@@ -328,4 +379,3 @@ class OrderDetailsCartContentView extends ContentView
 		return $t_html_output;
 	}
 }
-?>
