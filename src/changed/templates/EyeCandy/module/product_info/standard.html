@@ -79,8 +79,14 @@
 							<span class="tax-shipping-text">{$PRODUCTS_TAX_INFO}{$PRODUCTS_SHIPPING_LINK}</span><br />
 							<br />							
 							<div id="details_cart_part" style="{if $GM_GPRINT} display: none;{/if}">
-								{if $QUANTITY}<input type="text" id="gm_attr_calc_qty" name="products_qty" class="article-count-input numeric input-text big" value="{$QUANTITY}"{if $DISABLED_QUANTITY} disabled="disabled"{/if} />&nbsp;{/if}<a href="{page_url}#" id="cart_button" class="button_green_big button_set_big button_details_add_cart"><span class="button-outer"><span class="button-inner"><img class="png-fix" src="{$tpl_path}img/icons/icon-white-shoppingcart.png" alt="" style="margin-right:10px; float:left" />{$button.add_to_cart}</span></span></a>
-								{if $ADD_WISHLIST_BUTTON}<div class="leaflet"><a href="{page_url}#" id="gm_wishlist_link" class="button_details_add_wishlist">{$button.add_to_wishlist}</a></div>{/if}
+								<a href="{page_url}#" id="cart_button" class="button_green_big button_set_big button_details_add_cart"><span class="button-outer"><span class="button-inner"><img class="png-fix" src="{$tpl_path}img/icons/icon-white-shoppingcart.png" alt="" style="margin-right:10px; float:left" />{$txt.add_to_cart}</span></span></a>
+								{if $QUANTITY}
+									<span class="quantity_container">
+										{if $PRODUCTS_QUANTITY_UNIT}<label for="gm_attr_calc_qty" class="products_quantity_unit" id="gm_attr_calc_qty_unit">{$PRODUCTS_QUANTITY_UNIT}</label>{/if}
+										<input type="text" id="gm_attr_calc_qty" class="products_quantity" name="products_qty" value="{$QUANTITY}"{if $DISABLED_QUANTITY} disabled="disabled"{/if} />
+									</span>
+								{/if}
+									{if $ADD_WISHLIST_BUTTON}<div class="leaflet"><a href="{page_url}#" id="gm_wishlist_link" class="button_details_add_wishlist">{$button.add_to_wishlist}</a></div>{/if}
 								<input type="hidden" name="products_id" id="gm_products_id" value="{$PRODUCTS_ID}" />
 								<input type="hidden" name="submit_target" value="cart" />
 								<div id="details_qty_advice">
@@ -164,9 +170,7 @@
 		{$SHOPGATE_QR_BOX}
 		<div class="description tabs">
 			<div id="description-1">
-				<p>
-					{if $PRODUCTS_DESCRIPTION !=''}{$PRODUCTS_DESCRIPTION}{/if}					
-				</p>
+				{if $PRODUCTS_DESCRIPTION !=''}{$PRODUCTS_DESCRIPTION}{/if}
 			</div>
 		</div>		
 	</form>
