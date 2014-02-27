@@ -1,6 +1,6 @@
 <?php
 /* --------------------------------------------------------------
-   checkout_confirmation.php 2012-03-19 gm
+   checkout_confirmation.php 2012-07-06 gm
    Gambio GmbH
    http://www.gambio.de
    Copyright (c) 2012 Gambio GmbH
@@ -45,6 +45,7 @@ require (DIR_FS_CATALOG . 'templates/' . CURRENT_TEMPLATE . '/source/boxes.php')
 require_once (DIR_FS_INC . 'xtc_calculate_tax.inc.php');
 require_once (DIR_FS_INC . 'xtc_check_stock.inc.php');
 require_once (DIR_FS_INC . 'xtc_display_tax_value.inc.php');
+require_once(DIR_FS_INC . 'get_products_vpe_array.inc.php');
 
 // if the customer is not logged on, redirect them to the login page
 
@@ -121,11 +122,10 @@ else
 }
 }
 
-if(isset($_GET['payment_error'])) $smarty->assign('ERROR', htmlentities($_GET['ret_errormsg']));
+if(isset($_GET['payment_error'])) $smarty->assign('ERROR', htmlentities_wrapper($_GET['ret_errormsg']));
 
 // GV Code ICW ADDED FOR CREDIT CLASS SYSTEM
 require (DIR_WS_CLASSES . 'order_total.php');
-require (DIR_WS_CLASSES . 'order.php');
 $order = new order();
 
 // GV Code Start
@@ -159,7 +159,6 @@ if(is_array($payment_modules->modules) && strpos($_SESSION['payment'], 'saferpay
 // EOF GM_MOD saferpay
 
 // load the selected shipping module
-require (DIR_WS_CLASSES . 'shipping.php');
 $shipping_modules = new shipping($_SESSION['shipping']);
 
 // Stock Check
@@ -283,20 +282,137 @@ $t_products_array = array();
 $data_products = '<table id="table_products_data" border="0" cellspacing="0" cellpadding="0">';
 for ($i = 0, $n = sizeof($order->products); $i < $n; $i++)
 {
+	$coo_product_item = new product(xtc_get_prid($order->products[$i]['id']));
+	
+	$t_options_values_array = array();
+	$t_attr_weight = 0;
+	$t_attr_model_array = array();
+	if(isset($order->products[$i]['attributes']) && is_array($order->products[$i]['attributes']))
+	{
+		foreach($order->products[$i]['attributes'] AS $t_attributes_data_array)
+		{
+			$t_options_values_array[$t_attributes_data_array['option_id']] = $t_attributes_data_array['value_id'];
+		}
+				
+		// calculate attributes weight and get attributes model
+		foreach($t_options_values_array AS $t_option_id => $t_value_id)
+		{
+			$t_attr_sql = "SELECT
+								options_values_weight AS weight,
+								weight_prefix AS prefix,
+								attributes_model
+							FROM
+								products_attributes
+							WHERE
+								products_id				= '" . (int)xtc_get_prid($order->products[$i]['id']) . "' AND
+								options_id				= '" . (int)$t_option_id . "' AND
+								options_values_id		= '" . (int)$t_value_id	 . "'
+							LIMIT 1";
+			$t_attr_result = xtc_db_query($t_attr_sql);
+			if(xtc_db_num_rows($t_attr_result) == 1)
+			{
+				$t_attr_result_array = xtc_db_fetch_array($t_attr_result);
+				
+				if(trim($t_attr_result_array['attributes_model']) != '')
+				{
+					$t_attr_model_array[] = $t_attr_result_array['attributes_model'];
+				}
+				
+				if($t_attr_result_array['prefix'] == '-')
+				{
+					$t_attr_weight -= (double)$t_attr_result_array['weight'];
+				} 
+				else
+				{
+					$t_attr_weight += (double)$t_attr_result_array['weight'];
+				}
+			}			
+		}
+	}
+	
+	$t_shipping_time = '';
+	if(ACTIVATE_SHIPPING_STATUS == 'true')
+	{
+		$t_shipping_time = $order->products[$i]['shipping_time'];
+	}
+	
+	
+	$t_products_weight = '';	
+	if(!empty($coo_product_item->data['gm_show_weight']))
+	{
+		// already contains products properties weight
+		$t_products_weight = gm_prepare_number((double)$order->products[$i]['weight'] + $t_attr_weight, $xtPrice->currencies[$xtPrice->actualCurr]['decimal_point']);
+	}
+	
+	$t_products_model = $order->products[$i]['model'];
+	if($t_products_model != '' && isset($t_attr_model_array[0]))
+	{
+		$t_products_model .= '-' . implode('-', $t_attr_model_array);
+	}
+	else
+	{
+		$t_products_model .= implode('-', $t_attr_model_array);
+	}
+	
+	#properties
+	$t_properties = '';
+	$t_combis_id = '';
+	$t_properties_array = array();
+	if(strpos($order->products[$i]['id'], 'x') !== false)
+	{
+		$t_combis_id = (int)substr($order->products[$i]['id'], strpos($order->products[$i]['id'], 'x')+1);		
+	}	
+	if($t_combis_id != '')
+	{
+		$t_properties = $coo_properties_view->get_order_details_by_combis_id($t_combis_id, 'cart');
+		$t_properties_array = $coo_properties_view->v_coo_properties_control->get_properties_combis_details($t_combis_id, $_SESSION['languages_id']);
+		
+		if(method_exists($coo_properties_control, 'get_properties_combis_model'))
+		{
+			$t_combi_model = $coo_properties_control->get_properties_combis_model($t_combis_id);
+
+			if(APPEND_PROPERTIES_MODEL == "true") {
+				// Artikelnummer (Kombi) an Artikelnummer (Artikel) anh�ngen
+				if($t_products_model != '' && $t_combi_model != ''){
+					$t_products_model = $t_products_model .'-'. $t_combi_model;
+				}else if($t_combi_model != ''){
+					$t_products_model = $t_combi_model;
+				}
+			}else{
+				// Artikelnummer (Artikel) durch Artikelnummer (Kombi) ersetzen
+				if($t_combi_model != ''){
+					$t_products_model = $t_combi_model;
+				}
+			}
+
+			if($coo_product_item->data['use_properties_combis_shipping_time'] == 1 && ACTIVATE_SHIPPING_STATUS == 'true'){
+				$t_shipping_time = $coo_properties_control->get_properties_combis_shipping_time($t_combis_id);
+			}
+		}
+	}
+	
 	$t_products_item = array(
 		'products_name'		=> '',
 		'quantity'			=> '',
+		'price'				=> $xtPrice->xtcFormat($order->products[$i]['price'], true),
 		'final_price'		=> '',
 		'shipping_status'	=> '',
 		'attributes'		=> '',
 		'flag_last_item'	=> false,
-		'PROPERTIES'		=> ''
+		'PROPERTIES'		=> $t_properties,
+		'properties_array'	=> $t_properties_array,
+		'products_image'	=> (!empty($coo_product_item->data['gm_show_image']) && !empty($coo_product_item->data['products_image'])) ? DIR_WS_THUMBNAIL_IMAGES . $coo_product_item->data['products_image'] : '',
+		'products_vpe_array' => get_products_vpe_array($order->products[$i]['id'], $order->products[$i]['price'], $t_options_values_array),
+		'products_alt'		=> (!empty($coo_product_item->data['gm_alt_text'])) ? $coo_product_item->data['gm_alt_text'] : $order->products[$i]['name'],
+		'checkout_information' => $coo_product_item->data['checkout_information'],
+		'products_url'		=> xtc_href_link('request_port.php', 'module=ProductDetails&id=' . $order->products[$i]['id'], 'SSL'),	
+		'products_model'	=> $t_products_model,
+		'products_weight'	=> $t_products_weight,
+		'shipping_time'		=> $t_shipping_time,
+		'DATA_ARRAY'		=> $coo_product_item->data
 	);
 	$t_products_attributes = array();
 
-	#properties
-	$t_combis_id = $coo_properties_control->extract_combis_id($order->products[$i]['id']);
-	if($t_combis_id != '') $t_products_item['PROPERTIES'] = $coo_properties_view->get_order_details_by_combis_id($t_combis_id, 'cart');
 
 	if (ACTIVATE_SHIPPING_STATUS == 'true') {
 		$t_products_item['shipping_status'] = SHIPPING_TIME . $order->products[$i]['shipping_time'];
@@ -344,6 +460,10 @@ $t_products_array[sizeof($t_products_array)-1]['flag_last_item'] = true;
 $data_products .= '</table>';
 $smarty->assign('PRODUCTS_BLOCK', $data_products);
 
+$coo_content_master = MainFactory::create_object('ContentMaster');	
+$t_confirmation_info_array = $coo_content_master->get_content(198);
+$smarty->assign('CONFIRMATION_INFO', $t_confirmation_info_array['content_text']);
+
 # products table part
 $coo_content_view = new ContentView();
 $coo_content_view->set_content_template('module/checkout_confirmation_products.html');
@@ -357,7 +477,7 @@ if ($order->info['payment_method'] != 'no_payment' && $order->info['payment_meth
 	include (DIR_WS_LANGUAGES . '/' . $_SESSION['language'] . '/modules/payment/' . $order->info['payment_method'] . '.php');
 	$smarty->assign('PAYMENT_METHOD', constant(MODULE_PAYMENT_ . strtoupper($order->info['payment_method']) . _TEXT_TITLE));
 	if (isset($_GET['payment_error']) && is_object(${$_GET['payment_error']}) && ($error = ${$_GET['payment_error']}->get_error())){
-		$smarty->assign('error', $error['title'].'<br />'.htmlspecialchars($error['error']));
+		$smarty->assign('error', $error['title'].'<br />'.htmlspecialchars_wrapper($error['error']));
 	}
 }
 $smarty->assign('PAYMENT_EDIT', xtc_href_link(FILENAME_CHECKOUT_PAYMENT, '', 'SSL'));
@@ -401,7 +521,7 @@ if (is_array($payment_modules->modules)) {
 }
 
 if (xtc_not_null($order->info['comments'])) {
-	$smarty->assign('ORDER_COMMENTS', nl2br(htmlspecialchars($order->info['comments'])) . xtc_draw_hidden_field('comments', $order->info['comments']));
+	$smarty->assign('ORDER_COMMENTS', nl2br(htmlspecialchars_wrapper($order->info['comments'])) . xtc_draw_hidden_field('comments', $order->info['comments']));
 
 }
 
@@ -434,7 +554,9 @@ if (is_array($payment_modules->modules)) {
 $smarty->assign('MODULE_BUTTONS', $payment_button);
 // BOF GM_MOD
 $smarty->assign('BUTTON_BACK', '<a href="javascript:history.back()"><img src="templates/' . CURRENT_TEMPLATE . '/buttons/' . $_SESSION['language'] . '/backgr.gif" /></a>');
-$smarty->assign('CHECKOUT_BUTTON', xtc_image_submit('bestellung.gif', IMAGE_BUTTON_CONFIRM_ORDER) . '</form>' . "\n");
+$coo_text_mgr = MainFactory::create_object('LanguageTextManager', array('checkout_confirmation', $_SESSION['languages_id']) );
+$t_button_alt_text = $coo_text_mgr->get_text('text_confirm_send');
+$smarty->assign('CHECKOUT_BUTTON', xtc_image_submit('bestellung.gif', $t_button_alt_text) . '</form>' . "\n");
 // EOF GM_MOD
 
 // BOF GM_MOD Heidelpay Bugfixes
@@ -526,6 +648,10 @@ if($_SESSION['payment'] == 'machinecoin') {
     }
 }
 // Machinecoin Payment - Commerce Coding - END
+
+$coo_ts_excellence = MainFactory::create_object('TrustedShopsExcellenceContentView');
+$t_view_html = $coo_ts_excellence->get_html($order);
+$smarty->assign('MODULE_ts_excellence', $t_view_html);
 
 // BOF GM_MOD:
 $smarty->assign('LIGHTBOX', gm_get_conf('GM_LIGHTBOX_CHECKOUT'));	
