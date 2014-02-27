@@ -514,15 +514,15 @@ if($_SESSION['payment'] == 'machinecoin') {
     $multiplier = 1;
     $digits = 8;
     switch (MODULE_PAYMENT_MACHINECOIN_UNITS) {
-        case 'uBTC':
+        case 'uMAC':
             $multiplier *= 1000;
             $digits -= 3;
-        case 'mBTC':
+        case 'mMAC':
             $multiplier *= 1000;
             $digits -= 3;
-        case 'BTC':
-            $btcPrice = number_format($order->info['total'] / MODULE_PAYMENT_MACHINECOIN_BTCEUR * $multiplier, $digits, '.', '');
-            $smarty->assign('MACHINECOIN_PRICE', $btcPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS);
+        case 'MAC':
+            $macPrice = number_format($order->info['total'] / MODULE_PAYMENT_MACHINECOIN_MACEUR * $multiplier, $digits, '.', '');
+            $smarty->assign('MACHINECOIN_PRICE', $macPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS);
     }
 }
 // Machinecoin Payment - Commerce Coding - END

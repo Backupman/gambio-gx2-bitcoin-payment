@@ -311,15 +311,15 @@ class OrderDetailsCartContentView extends ContentView
        $multiplier = 1;
        $digits = 8;
        switch (MODULE_PAYMENT_MACHINECOIN_UNITS) {
-           case 'uBTC':
+           case 'uMAC':
                $multiplier *= 1000;
                $digits -= 3;
-           case 'mBTC':
+           case 'mMAC':
                $multiplier *= 1000;
                $digits -= 3;
-           case 'BTC':
-               $btcPrice = number_format($total / MODULE_PAYMENT_MACHINECOIN_BTCEUR * $multiplier, $digits, '.', '');
-               $this->set_content_data('MACHINECOIN_PRICE', $btcPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS);
+           case 'MAC':
+               $macPrice = number_format($total / MODULE_PAYMENT_MACHINECOIN_MACEUR * $multiplier, $digits, '.', '');
+               $this->set_content_data('MACHINECOIN_PRICE', $macPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS);
        }
        // Machinecoin Payment - Commerce Coding - END
 

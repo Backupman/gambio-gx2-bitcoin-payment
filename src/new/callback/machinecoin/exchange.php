@@ -39,7 +39,7 @@ switch (MODULE_PAYMENT_MACHINECOIN_SOURCE) {
     case 'coinbase.com':
         $json = file_get_contents('https://coinbase.com/api/v1/currencies/exchange_rates');
         $object = json_decode($json);
-        $rate = $object->btc_to_usd;
+        $rate = $object->mac_to_usd;
         break;
     default:
         $rate = null;
@@ -49,5 +49,5 @@ if($rate) {
     $json = file_get_contents('https://bitdango.com/api/currencypairs/USDEUR');
     $object = json_decode($json);
     $usdToEur = $object->ExchangeRate;
-    xtc_db_query("UPDATE " . TABLE_CONFIGURATION . " SET `configuration_value` = '" . number_format($rate * $usdToEur, 5, '.', '')  . "' WHERE `configuration_key` = 'MODULE_PAYMENT_MACHINECOIN_BTCEUR'");
+    xtc_db_query("UPDATE " . TABLE_CONFIGURATION . " SET `configuration_value` = '" . number_format($rate * $usdToEur, 5, '.', '')  . "' WHERE `configuration_key` = 'MODULE_PAYMENT_MACHINECOIN_MACEUR'");
 }

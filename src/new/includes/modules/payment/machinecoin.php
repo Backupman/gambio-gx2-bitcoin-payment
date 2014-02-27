@@ -127,20 +127,20 @@ class machinecoin
         $totals = $order->totals;
         $total = end($totals);
 
-        $price = $total['value'] / MODULE_PAYMENT_MACHINECOIN_BTCEUR;
+        $price = $total['value'] / MODULE_PAYMENT_MACHINECOIN_MACEUR;
         $multiplier = 1;
         $digits = 8;
         switch (MODULE_PAYMENT_MACHINECOIN_UNITS) {
-            case 'uBTC':
+            case 'uMAC':
                 $multiplier *= 1000;
                 $digits -= 3;
-            case 'mBTC':
+            case 'mMAC':
                 $multiplier *= 1000;
                 $digits -= 3;
-            case 'BTC':
-                $btcPrice = number_format($price * $multiplier, $digits, '.', '');
+            case 'MAC':
+                $macPrice = number_format($price * $multiplier, $digits, '.', '');
         }
-        $_SESSION['machinecoin_amount'] = $btcPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS;
+        $_SESSION['machinecoin_amount'] = $macPrice . ' ' . MODULE_PAYMENT_MACHINECOIN_UNITS;
 
         $query = xtc_db_query("SELECT orders_status_history_id, comments FROM " . TABLE_ORDERS_STATUS_HISTORY . "
                                WHERE orders_id = '" . $insert_id . "'
@@ -209,14 +209,14 @@ class machinecoin
             VALUES
             ('MODULE_PAYMENT_MACHINECOIN_STATUS', 'False', '6', '1', 'xtc_cfg_select_option(array(\'True\', \'False\'), ', now()),
             ('MODULE_PAYMENT_MACHINECOIN_SOURCE', 'none', '6', '4', 'xtc_cfg_select_option(array(\'none\', \'blockchain.info\', \'bitstamp.net\', \'coinbase.com\'), ', now()),
-            ('MODULE_PAYMENT_MACHINECOIN_UNITS', 'BTC', '6', '3', 'xtc_cfg_select_option(array(\'BTC\', \'mBTC\', \'uBTC\'), ', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_UNITS', 'MAC', '6', '3', 'xtc_cfg_select_option(array(\'MAC\', \'mMAC\', \'uMAC\'), ', now()),
             ('MODULE_PAYMENT_MACHINECOIN_API_SHARED', 'False', '6', '8', 'xtc_cfg_select_option(array(\'True\', \'False\'), ', now())");
 
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . "
             (configuration_key, configuration_value, configuration_group_id, sort_order, date_added)
             VALUES
             ('MODULE_PAYMENT_MACHINECOIN_ALLOWED', '', '6', '2', now()),
-            ('MODULE_PAYMENT_MACHINECOIN_BTCEUR', '', '6', '5', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_MACEUR', '', '6', '5', now()),
             ('MODULE_PAYMENT_MACHINECOIN_API_ADDRESS', '', '6', '6', now()),
             ('MODULE_PAYMENT_MACHINECOIN_API_CONFIRMS', '', '6', '7', now()),
             ('MODULE_PAYMENT_MACHINECOIN_SORT_ORDER', '0', '6', '11', now())");
@@ -276,7 +276,7 @@ class machinecoin
             'MODULE_PAYMENT_MACHINECOIN_ALLOWED',
             'MODULE_PAYMENT_MACHINECOIN_UNITS',
             'MODULE_PAYMENT_MACHINECOIN_SOURCE',
-            'MODULE_PAYMENT_MACHINECOIN_BTCEUR',
+            'MODULE_PAYMENT_MACHINECOIN_MACEUR',
             'MODULE_PAYMENT_MACHINECOIN_API_ADDRESS',
             'MODULE_PAYMENT_MACHINECOIN_API_CONFIRMS',
             'MODULE_PAYMENT_MACHINECOIN_API_SHARED',
