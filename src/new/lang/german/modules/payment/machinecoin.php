@@ -1,6 +1,6 @@
 <?php
 /**
- * Machinecoin Payment for Gambio GX2
+ * Machinecoin Payment for Gambio Shopsoftware
  *
  * NOTICE OF LICENSE
  *
