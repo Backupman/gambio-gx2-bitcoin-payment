@@ -1,6 +1,6 @@
 <?php
 /* --------------------------------------------------------------
-   ProductInfoContentView.inc.php 2012-04-18 gambio
+   ProductInfoContentView.inc.php 2013-05-08 gm
    Gambio GmbH
    http://www.gambio.de
    Copyright (c) 2012 Gambio GmbH
@@ -24,6 +24,10 @@
    Cross-Sell (X-Sell) Admin 1                          Autor: Joshua Dechant (dreamscape)
    Released under the GNU General Public License
    ---------------------------------------------------------------------------------------*/
+
+/******** SHOPGATE **********/
+include_once DIR_FS_CATALOG.'/shopgate/gambiogx/includes/header.php';
+/******** SHOPGATE **********/
 
 // include needed functions
 require_once (DIR_FS_INC.'xtc_get_download.inc.php');
@@ -49,23 +53,12 @@ class ProductInfoContentView extends ContentView
 {
 	function ProductInfoContentView($p_template = 'default')
 	{
-		if ($p_template == '' or $p_template == 'default') {
-			$files = array ();
-			if ($dir = opendir(DIR_FS_CATALOG.'templates/'.CURRENT_TEMPLATE.'/module/product_info/')) {
-				while ($file = readdir($dir)) {
-					if (is_file(DIR_FS_CATALOG.'templates/'.CURRENT_TEMPLATE.'/module/product_info/'.$file) and ($file != "index.html") and (substr($file, 0, 1) !=".")) {
-						$files[] = array ('id' => $file, 'text' => $file);
-					} //if
-				} // while
-				closedir($dir);
-			}
-			$c_template = basename($files[0]['id']);
-		}
-		else
-		{
-			$c_template = basename($p_template);
-		}
-		
+		$filepath = DIR_FS_CATALOG.'templates/'.CURRENT_TEMPLATE.'/module/product_info/';
+		$c_template = basename($p_template);
+
+		// get default template
+		$c_template = $this->get_default_template($filepath, $p_template);
+
 		$this->set_content_template('module/product_info/' . $c_template);
 		$this->set_flat_assigns(true);
 	}
@@ -75,21 +68,10 @@ class ProductInfoContentView extends ContentView
 		$t_html_output = '';
 
 		$xtPrice = new xtcPrice($_SESSION['currency'], $_SESSION['customers_status']['customers_status_id']);
+		$xtPrice->showFrom_Attributes = false;
 		$main = new main();
 		
 		$group_check = '';
-
-		// xs:booster start (v1.041)
-		$xsb_tx = array();
-		if(@is_array($_SESSION['xtb0']['tx'])) {
-			foreach($_SESSION['xtb0']['tx'] as $tx) {
-				if($tx['products_id']==$p_coo_product->data['products_id']) {
-					$xsb_tx = $tx;
-					break;
-				}
-			}
-		}
-		// xs:booster end
 
 		if (!is_object($p_coo_product) || !$p_coo_product->isProduct()) { // product not found in database
 			$error = TEXT_PRODUCT_NOT_FOUND;
@@ -174,9 +156,9 @@ class ProductInfoContentView extends ContentView
 				$this->set_content_data('SHIPPING_IMAGE', $main->getShippingStatusImage($p_coo_product->data['products_shippingtime']));
 			}
 			// BOF_GM_MOD:
-			$this->set_content_data('FORM_ACTION', xtc_draw_form('cart_quantity', xtc_href_link(FILENAME_PRODUCT_INFO, xtc_get_all_get_params(array('action')).'action=add_product'),'post', 'name="cart_quantity" onsubmit="gm_qty_check = new GMOrderQuantityChecker(); return gm_qty_check.check();"'));
+			$this->set_content_data('FORM_ACTION', xtc_draw_form('cart_quantity', xtc_href_link(FILENAME_PRODUCT_INFO, xtc_get_all_get_params(array('action')).'action=add_product', 'NONSSL', true, true, true),'post', 'name="cart_quantity" onsubmit="gm_qty_check = new GMOrderQuantityChecker(); return gm_qty_check.check();"'));
 
-			$this->set_content_data('FORM_ACTION_URL', xtc_href_link(FILENAME_PRODUCT_INFO, xtc_get_all_get_params(array('action')).'action=add_product'));
+			$this->set_content_data('FORM_ACTION_URL', xtc_href_link(FILENAME_PRODUCT_INFO, xtc_get_all_get_params(array('action')).'action=add_product', 'NONSSL', true, true, true));
 			$this->set_content_data('FORM_ID', 'cart_quantity');
 			$this->set_content_data('FORM_NAME', 'cart_quantity');
 			$this->set_content_data('FORM_METHOD', 'post');
@@ -195,6 +177,47 @@ class ProductInfoContentView extends ContentView
 
 			$this->set_content_data('FORM_END', '</form>');
 			$this->set_content_data('PRODUCTS_PRICE', $products_price['formated']);
+			
+			// preisstatus abfragen
+			if($p_coo_product->data['gm_price_status'] == 1)
+			{
+				$coo_seo_boost = MainFactory::create_object('GMSEOBoost');
+				$t_sef_parameter = '';
+				
+				$t_select = "
+							SELECT 
+								content_id, 
+								content_title 
+							FROM " . TABLE_CONTENT_MANAGER . " 
+							WHERE 
+								languages_id = '" . (int) $_SESSION['languages_id'] . "' AND 
+								content_group = '7'";
+				$t_result = xtc_db_query($t_select);
+				if(xtc_db_num_rows($t_result))
+				{
+					$t_row = xtc_db_fetch_array($t_result);
+					$t_contact_content_id = $t_row['content_id'];
+					$t_contact_content_title = $t_row['content_title'];
+
+					if(SEARCH_ENGINE_FRIENDLY_URLS == 'false')
+					{
+						$t_sef_parameter = '&content=' . xtc_cleanName($t_contact_content_title);
+					}
+				}
+				if($coo_seo_boost->boost_content)
+				{
+					$t_contact_url = xtc_href_link($coo_seo_boost->get_boosted_content_url($t_contact_content_id, $_SESSION['languages_id']) . '?subject=' . rawurlencode(GM_SHOW_PRICE_ON_REQUEST . ': ' . $p_coo_product->data['products_name']));
+				}
+				else
+				{
+					$t_contact_url = xtc_href_link(FILENAME_CONTENT, 'coID=7&subject=' . rawurlencode(GM_SHOW_PRICE_ON_REQUEST . ': ' . $p_coo_product->data['products_name']) . $t_sef_parameter);
+				}
+				
+				$t_contact_link = '<a href="' . $t_contact_url . '">' . GM_SHOW_PRICE_ON_REQUEST . '</a>';
+				
+				$this->set_content_data('PRODUCTS_PRICE', $t_contact_link);
+			}
+			
 			if ($p_coo_product->data['products_vpe_status'] == 1 && $p_coo_product->data['products_vpe_value'] != 0.0 && $products_price['plain'] > 0)
 				$this->set_content_data('PRODUCTS_VPE', $xtPrice->xtcFormat($products_price['plain'] * (1 / $p_coo_product->data['products_vpe_value']), true).TXT_PER.xtc_get_vpe_name($p_coo_product->data['products_vpe']));
 			$this->set_content_data('PRODUCTS_ID', $p_coo_product->data['products_id']);
@@ -226,10 +249,10 @@ class ProductInfoContentView extends ContentView
 			if($p_coo_product->data['gm_show_qty_info'] == 1)
 			{
 				$this->set_content_data('PRODUCTS_QUANTITY', gm_convert_qty(xtc_get_products_stock($p_coo_product->data['products_id']), false));
-				if($p_coo_product->data['quantity_unit_id'] > 0)
-				{
-					$this->set_content_data('PRODUCTS_QUANTITY_UNIT', $p_coo_product->data['unit_name']);
-				}
+			}
+			if($p_coo_product->data['quantity_unit_id'] > 0)
+			{
+				$this->set_content_data('PRODUCTS_QUANTITY_UNIT', $p_coo_product->data['unit_name']);
 			}
 
 			// BOF GM_MOD
@@ -542,8 +565,8 @@ class ProductInfoContentView extends ContentView
 			{
 				$this->set_content_data('SHOW_BOOKMARKING', 1);
 			}
-			// EOF GM_MOD
-
+			// EOF GM_MOD	
+			
            // Machinecoin Payment - Commerce Coding - BEGIN
            $multiplier = 1;
            $digits = 8;
@@ -560,7 +583,6 @@ class ProductInfoContentView extends ContentView
            }
            // Machinecoin Payment - Commerce Coding - END
 
-			include_once DIR_FS_DOCUMENT_ROOT.'/shopgate/plugins/gambiogx/system/views/product_info/ProductInfoContentView.inc.php';
 			$t_html_output = $this->build_html();
 		}
 		
@@ -568,4 +590,3 @@ class ProductInfoContentView extends ContentView
 	}
 	
 }
-?>
