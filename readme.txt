@@ -4,7 +4,7 @@ Machinecoin Payment Module for Gambio Shopsoftware
 ==Copyright==
 (c) 2014, Commerce Coding
 http://www.commerce-coding.de
-(c) 2014, Commerce Coding
+(c) 2014, Machinecoin
 http://machinecoin.de
 
 ==Current Version==
