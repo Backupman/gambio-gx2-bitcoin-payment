@@ -36,7 +36,7 @@
 			{/if}
 			{*zmb clickandbuy end*}
 		</div>
-
+		
         <!-- Machinecoin Payment - Commerce Coding - BEGIN -->
 		{if $smarty.session.machinecoin_address}
 		<h2 class="underline overline"><img class="png-fix" src="{$tpl_path}img/icons/payment.png" alt="" />Machinecoin Information</h2>
@@ -75,6 +75,12 @@
 		</div>
 
 		<p class="thanks">{$txt.text_thankyou}</p>
+		<!-- START AFFILIPRINT VAAS !-->
+		{if $AFFILIPRINT_SNIPPET}
+			{$AFFILIPRINT_SNIPPET}
+		{/if}
+		<div style="clear: both">&nbsp;</div>
+		<!-- END AFFILIPRINT VAAS !-->
 
 		{$FORM_END}
 
@@ -85,7 +91,10 @@
 			{$TRUSTED_BLOCK}
 		</div>
 		{/if}
-
+		
+		{if $GOOGLE_CONVERSION}
+			{$GOOGLE_CONVERSION_BLOCK}
+		{/if}
 
 		{if $GOOGLE_ANALYTICS_CODE != '0'}
 			{$GOOGLE_ANALYTICS_CODE}
