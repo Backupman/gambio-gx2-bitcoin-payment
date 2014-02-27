@@ -17,8 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
- * @copyright   Copyright (c) 2013 CommerceCoding (http://www.commerce-coding.de)
+ * @copyright   Copyright (c)   2013 CommerceCoding (http://www.commerce-coding.de)
+ *                              2014 Machinecoinn   (http://www.machinecoin.de)
  * @author      Alexander Diebler
+ *              Jürgen Scholz
  * @license     http://opensource.org/licenses/GPL-2.0  GNU General Public License, version 2 (GPL-2.0)
  */
 
