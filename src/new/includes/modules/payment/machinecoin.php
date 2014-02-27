@@ -208,7 +208,7 @@ class machinecoin
             (configuration_key, configuration_value, configuration_group_id, sort_order, set_function, date_added)
             VALUES
             ('MODULE_PAYMENT_MACHINECOIN_STATUS', 'False', '6', '1', 'xtc_cfg_select_option(array(\'True\', \'False\'), ', now()),
-            ('MODULE_PAYMENT_MACHINECOIN_SOURCE', 'none', '6', '4', 'xtc_cfg_select_option(array(\'none\', \'blockchain.info\', \'bitstamp.net\', \'coinbase.com\'), ', now()),
+            ('MODULE_PAYMENT_MACHINECOIN_SOURCE', 'none', '6', '4', 'xtc_cfg_select_option(array(\'none\'), ', now()),
             ('MODULE_PAYMENT_MACHINECOIN_UNITS', 'MAC', '6', '3', 'xtc_cfg_select_option(array(\'MAC\', \'mMAC\', \'uMAC\'), ', now()),
             ('MODULE_PAYMENT_MACHINECOIN_API_SHARED', 'False', '6', '8', 'xtc_cfg_select_option(array(\'True\', \'False\'), ', now())");
 
