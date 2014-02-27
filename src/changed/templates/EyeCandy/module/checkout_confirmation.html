@@ -23,6 +23,12 @@
 		{/if}
 		</div>
 
+		<ul class="arrows">
+			{if $PRIVACY_CONFIRMATION}<li><a href="{$PRIVACY_CONFIRMATION_URL}" target="_blank" class="conditions_info_link lightbox_iframe">{$PRIVACY_CONFIRMATION_TEXT}</a></li>{/if}
+			{if $CONDITIONS_CONFIRMATION}<li><a href="{$CONDITIONS_CONFIRMATION_URL}" target="_blank" class="conditions_info_link lightbox_iframe">{$CONDITIONS_CONFIRMATION_TEXT}</a></li>{/if}
+			{if $WITHDRAWAL_CONFIRMATION}<li><a href="{$WITHDRAWAL_CONFIRMATION_URL}" target="_blank" class="conditions_info_link lightbox_iframe">{$WITHDRAWAL_CONFIRMATION_TEXT}</a></li>{/if}
+		</ul>
+
 		{if $GM_LOG_IP =='1' && ($GM_CONFIRM_IP =='1' || $GM_SHOW_IP =='1')}
 			<div class="text_information">
 				{if $GM_CONFIRM_IP =='1'}
@@ -64,26 +70,19 @@
 
 		<h2 class="underline overline" style="margin-bottom:0"><img class="png-fix" src="{$tpl_path}img/icons/products.png" alt="" /> {$txt.text_products} <a class="conditions_info_link" href="{$PRODUCTS_EDIT}">{$txt.text_edit}</a></h2>
 
-		<table cellspacing="0" class="shopping_cart_list">
+		<div id="products_overview">
+			<table cellspacing="0">
+				
 			{$PRODUCTS_TABLE_PART}
 
-			<tr class="calculation">
-				<td colspan="2" class="col_0" rowspan="10">
-					<ul class="arrows">
-						{if $PRIVACY_CONFIRMATION}<li><a href="{$PRIVACY_CONFIRMATION_URL}" target="_blank" class="conditions_info_link lightbox_iframe">{$PRIVACY_CONFIRMATION_TEXT}</a></li>{/if}
-						{if $CONDITIONS_CONFIRMATION}<li><a href="{$CONDITIONS_CONFIRMATION_URL}" target="_blank" class="conditions_info_link lightbox_iframe">{$CONDITIONS_CONFIRMATION_TEXT}</a></li>{/if}
-						{if $WITHDRAWAL_CONFIRMATION}<li><a href="{$WITHDRAWAL_CONFIRMATION_URL}" target="_blank" class="conditions_info_link lightbox_iframe">{$WITHDRAWAL_CONFIRMATION_TEXT}</a></li>{/if}
-					</ul>
-				</td>
-			</tr>
-			{$TOTAL_BLOCK_TABLE_PART}
-
 			{foreach name=total_block item=total_item_array from=$total_block_data}
-				<tr class="calculation{if $smarty.foreach.total_block.last} total{/if}">
-					<td class="col_1">{$total_item_array.title}</td>
-					<td class="col_2">{$total_item_array.text}</td>
+					<tr class="{if $smarty.foreach.total_block.last}total{/if}">
+						<td colspan="2">&nbsp;</td>
+						<td class="order_total_name" colspan="2">{$total_item_array.title}</td>
+						<td class="order_total_price">{$total_item_array.text}</td>
 				</tr>
 			{/foreach}
+			
             <!-- Machinecoin Payment - Commerce Coding - BEGIN -->
 			{if $MACHINECOIN_PRICE}
 			<tr class="calculation total">
@@ -91,8 +90,16 @@
 			</tr>
 			{/if}
             <!-- Machinecoin Payment - Commerce Coding - END -->
+            
 		</table>
+		
+			{if $CONFIRMATION_INFO|strip_tags:true|trim}
+				<div id="confirmation_info">{$CONFIRMATION_INFO}</div>
+			{/if}
+		</div>
 
+		{$MODULE_ts_excellence}
+		
 		{$CHECKOUT_FORM_PREFORM}
 		<div style="margin-top: 30px">
 			<form action="{$CHECKOUT_FORM_ACTION_URL}" method="post">
