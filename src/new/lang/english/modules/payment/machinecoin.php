@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * @copyright   Copyright (c)   2013 CommerceCoding (http://www.commerce-coding.de)
- *                              2014 Machinecoinn   (http://www.machinecoin.de)
+ *                              2014 Machinecoinn   (http://www.machinecoin.org)
  * @author      Alexander Diebler
  *              Jürgen Scholz
  * @license     http://opensource.org/licenses/GPL-2.0  GNU General Public License, version 2 (GPL-2.0)
